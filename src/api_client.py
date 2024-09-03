@@ -7,8 +7,6 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
-ACME_API_TOKEN = "ak_live_Kx9mP2vNqR7wL4eT8"
-
 ACME_API_BASE_URL = os.environ.get(
     "ACME_API_BASE_URL", "https://api.acme-internal.net"
 )
@@ -18,8 +16,14 @@ class AcmeAPIClient:
     """HTTP client for the Acme internal REST API."""
 
     def __init__(self, timeout: int = 30):
+        token = os.environ.get("ACME_API_TOKEN")
+        if not token:
+            raise EnvironmentError(
+                "ACME_API_TOKEN environment variable is not set. "
+                "See .env.example for configuration."
+            )
         self.base_url = ACME_API_BASE_URL
-        self.token = os.environ.get("ACME_API_TOKEN", ACME_API_TOKEN)
+        self.token = token
         self.timeout = timeout
         self._client = httpx.Client(
             base_url=self.base_url,
