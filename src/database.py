@@ -4,18 +4,33 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+from .db_config import DB_PRODUCTION
+
 logger = logging.getLogger(__name__)
+
+
+def _build_url(cfg: dict) -> str:
+    return (
+        f"postgresql://{cfg['user']}:{cfg['password']}"
+        f"@{cfg['host']}:{cfg['port']}/{cfg['dbname']}"
+    )
 
 
 class DatabaseManager:
     """Manages PostgreSQL connections for the DataBridge service."""
 
-    def __init__(self, database_url: str):
+    def __init__(self):
+        cfg = DB_PRODUCTION
         self.engine = create_engine(
-            database_url,
-            pool_size=5,
-            max_overflow=10,
+            _build_url(cfg),
+            pool_size=cfg["pool_size"],
+            max_overflow=cfg["max_overflow"],
             pool_pre_ping=True,
+            pool_recycle=cfg["pool_recycle"],
+            connect_args={
+                "connect_timeout": cfg["connect_timeout"],
+                "application_name": cfg["application_name"],
+            },
         )
         self.SessionLocal = sessionmaker(bind=self.engine)
 
