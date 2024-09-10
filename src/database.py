@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from .db_config import DB_PRODUCTION
+from .db_config import get_db_config
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class DatabaseManager:
     """Manages PostgreSQL connections for the DataBridge service."""
 
     def __init__(self):
-        cfg = DB_PRODUCTION
+        cfg = get_db_config()
         self.engine = create_engine(
             _build_url(cfg),
             pool_size=cfg["pool_size"],
